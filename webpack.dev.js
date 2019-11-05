@@ -1,6 +1,9 @@
 const common = require("./webpack.common");
 const merge = require("webpack-merge");
 const globImporter = require('node-sass-glob-importer');
+const AntdScssThemePlugin = require('antd-scss-theme-plugin');
+const path = require("path");
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 module.exports = merge(common, {
     mode: "development",
@@ -21,16 +24,32 @@ module.exports = merge(common, {
                             })],
                         }
                     },
-                    {
-                        loader: 'sass-loader', options: {
-                            sassOptions: {
-                                importer: globImporter()
-                            }
-                        }
-                    }]
+                    AntdScssThemePlugin.themify({
+                        loader: 'sass-loader',
+                        options: {
+                            importer: globImporter()
+                        },
+                      }),
+                    ]
             },
+            {
+                test: /\.(c|le)ss$/,
+                use: [
+                  {
+                    loader: 'style-loader',
+                  },
+                  {
+                    loader: 'css-loader',
+                  },
+                  AntdScssThemePlugin.themify('less-loader'),
+                ],
+              },
         ]
     },
+    plugins: [
+        new AntdScssThemePlugin(path.join(__dirname, 'src', 'theme.scss')),
+        new BundleAnalyzerPlugin()
+      ],
     devtool:'cheap-module-eval-source-map',   
     devServer: {
         // contentBase: path.join(__dirname, 'dist'),

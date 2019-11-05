@@ -6,6 +6,7 @@ const merge = require("webpack-merge");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CompressionPlugin = require('compression-webpack-plugin');
 const globImporter = require('node-sass-glob-importer');
+const AntdScssThemePlugin = require('antd-scss-theme-plugin');
 
 module.exports = merge(common, {
     mode: "production",
@@ -18,7 +19,7 @@ module.exports = merge(common, {
             {
                 test: /\.(sa|sc|c)ss$/,
                 use: [
-                    { loader: MiniCssExtractPlugin.loader },
+                    { loader: MiniCssExtractPlugin.loader, },
                     { loader: 'css-loader' },
                     {
                         loader: 'postcss-loader',
@@ -28,14 +29,26 @@ module.exports = merge(common, {
                             })],
                         }
                     },
-                    {
-                        loader: 'sass-loader', options: {
-                            sassOptions: {
-                                importer: globImporter()
-                            }
-                        }
-                    }]
-            }
+                    AntdScssThemePlugin.themify({
+                        loader: 'sass-loader',
+                        options: {
+                            importer: globImporter()
+                        },
+                      }),
+                    ]
+            },
+            {
+                test: /\.(c|le)ss$/,
+                use: [
+                  {
+                    loader: 'style-loader',
+                  },
+                  {
+                    loader: 'css-loader',
+                  },
+                  AntdScssThemePlugin.themify('less-loader'),
+                ],
+              },
         ]
     },
     devtool:'source-map',
@@ -44,6 +57,7 @@ module.exports = merge(common, {
         new MiniCssExtractPlugin({
             filename: "./src/css/[name].[contentHash].css"
         }),
+        new AntdScssThemePlugin(path.join(__dirname, 'src', 'theme.scss')),
         new CompressionPlugin({
             filename: "[path].gz[query]",
             algorithm: "gzip",
